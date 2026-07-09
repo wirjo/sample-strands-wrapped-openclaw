@@ -1,0 +1,6 @@
+openclaw/
+lib/
+agent.zip
+__pycache__/
+*.pyc
+.env
