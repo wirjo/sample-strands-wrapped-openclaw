@@ -176,7 +176,7 @@ OpenClaw's gateway listens on port 18789 (configurable). It uses a custom JSON-R
     "method": "connect",
     "params": {
       "minProtocol": 3,
-      "maxProtocol": 3,
+      "maxProtocol": 4,
       "client": { "id": "gateway-client", "mode": "backend" },
       "auth": { "token": "gateway-token" },
       "role": "operator",
