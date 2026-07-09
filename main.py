@@ -36,8 +36,8 @@ async def invoke_openclaw(message: str, session_key: str = "agentcore") -> str:
             "id": connect_id,
             "method": "connect",
             "params": {
-                "minProtocol": 4,
-                "maxProtocol": 4,
+                "minProtocol": 3,
+                "maxProtocol": 3,
                 "client": {"id": "gateway-client", "mode": "backend", "version": "1.0.0"},
                 "auth": {"token": GATEWAY_TOKEN} if GATEWAY_TOKEN else {},
                 "role": "operator",
