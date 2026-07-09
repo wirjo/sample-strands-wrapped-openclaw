@@ -71,7 +71,14 @@ async def invoke_openclaw(message: str, session_key: str = "agentcore") -> str:
             msg = json.loads(raw)
             if msg.get("type") == "res" and msg.get("id") == agent_id:
                 payload = msg.get("payload", {})
-                return payload.get("reply", payload.get("response", ""))
+                # Response shape: payload.result.payloads[0].text (from openclaw agent --json)
+                # Or fallback to payload.reply / payload.response for future versions
+                result = payload.get("result", {})
+                payloads = result.get("payloads", [])
+                if payloads and payloads[0].get("text"):
+                    return payloads[0]["text"]
+                # Fallback keys
+                return payload.get("reply", payload.get("response", payload.get("text", "")))
 
     return ""
 
