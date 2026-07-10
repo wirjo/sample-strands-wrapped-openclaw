@@ -136,23 +136,84 @@ async def invoke_openclaw(message: str, session_key: str = "agentcore") -> str:
                 "method": "agent",
                 "params": {
                     "message": message,
-                    "sessionKey": session_key,
+                    "sessionKey": f"agent:main:{session_key}",
                     "idempotencyKey": agent_id,
                     "timeout": 120,
                 },
             }))
 
-            # 4. Wait for the response (may receive events before final response)
+            # 4. Wait for the accepted response, then listen for completion
+            run_id = None
+            collected_text = ""
+
             while True:
                 raw = await asyncio.wait_for(ws.recv(), timeout=130)
                 msg = json.loads(raw)
-                if msg.get("type") == "res" and msg.get("id") == agent_id:
+                msg_type = msg.get("type")
+
+                # Response to our agent request (accepted/error)
+                if msg_type == "res" and msg.get("id") == agent_id:
                     payload = msg.get("payload", {})
-                    result = payload.get("result", {})
-                    payloads = result.get("payloads", [])
-                    if payloads and payloads[0].get("text"):
-                        return payloads[0]["text"]
-                    return payload.get("reply", payload.get("response", payload.get("text", str(payload))))
+                    error = msg.get("error")
+                    if error:
+                        return f"Error: Agent request failed: {error}"
+                    run_id = payload.get("runId")
+                    status = payload.get("status")
+                    if status != "accepted":
+                        # Direct response (non-async)
+                        result = payload.get("result", {})
+                        text = result.get("text", payload.get("reply", payload.get("text", "")))
+                        if text:
+                            return text
+                        return str(payload)
+                    # Accepted — keep listening for the completion event
+                    continue
+
+                # Stream events from the agent run
+                if msg_type == "event":
+                    event_name = msg.get("event", "")
+                    data = msg.get("data", {})
+
+                    # agent.delta — streaming text chunks
+                    if event_name == "agent.delta":
+                        chunk = data.get("text", data.get("delta", ""))
+                        collected_text += chunk
+                        continue
+
+                    # agent.done / run.completed — final response
+                    if event_name in ("agent.done", "run.completed", "agent.completed"):
+                        # Try to get the final text from the event data
+                        final_text = data.get("text", data.get("reply", ""))
+                        if final_text:
+                            return final_text
+                        # Fall back to messages array
+                        messages = data.get("messages", [])
+                        if messages:
+                            last = messages[-1]
+                            content = last.get("content", "")
+                            if isinstance(content, list):
+                                # Extract text parts
+                                return "".join(
+                                    p.get("text", "") for p in content
+                                    if isinstance(p, dict) and p.get("type") == "text"
+                                )
+                            return str(content)
+                        # Fall back to collected streaming text
+                        if collected_text:
+                            return collected_text
+                        return str(data) if data else "Agent completed with no response."
+
+                    # run.error — agent failed
+                    if event_name in ("run.error", "agent.error"):
+                        return f"Error: Agent run failed: {data.get('error', data.get('message', str(data)))}"
+
+                    # Other events — skip
+                    continue
+
+            # If we exit the loop without a response, return what we collected
+            if collected_text:
+                return collected_text
+            return "No response received from agent."
 
     except Exception as e:
         return f"Error invoking OpenClaw: {e}"
