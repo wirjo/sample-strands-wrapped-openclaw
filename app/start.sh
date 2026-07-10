@@ -4,15 +4,15 @@ set -euo pipefail
 
 echo "[openclaw-agentcore] Starting OpenClaw on AgentCore Runtime..."
 
-# Start OpenClaw gateway in background (bundled binary)
+# Start OpenClaw gateway in background
 if [ -x "./openclaw/node" ]; then
     # Static zip deployment — use bundled Node.js + OpenClaw
     echo "[openclaw-agentcore] Using bundled OpenClaw binary"
-    ./openclaw/node ./openclaw/node_modules/openclaw/openclaw.mjs gateway run --port ${OPENCLAW_PORT:-18789} &
+    ./openclaw/node ./openclaw/node_modules/openclaw/openclaw.mjs gateway --port ${OPENCLAW_PORT:-18789} &
 elif command -v openclaw &>/dev/null; then
     # Container deployment — OpenClaw installed globally
     echo "[openclaw-agentcore] Using system OpenClaw"
-    openclaw gateway run --port ${OPENCLAW_PORT:-18789} &
+    openclaw gateway --port ${OPENCLAW_PORT:-18789} &
 else
     echo "[openclaw-agentcore] ERROR: OpenClaw not found"
     exit 1
