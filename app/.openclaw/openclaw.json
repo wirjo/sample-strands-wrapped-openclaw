@@ -40,7 +40,7 @@
     "mode": "local",
     "port": 18789,
     "auth": {
-      "mode": "off"
+      "mode": "none"
     }
   },
   "channels": {}
