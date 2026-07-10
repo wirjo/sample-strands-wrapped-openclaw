@@ -1,0 +1,9 @@
+.git
+agentcore/
+scripts/
+openclaw/
+__pycache__
+*.pyc
+*.egg-info
+.venv
+node_modules

@@ -4,3 +4,7 @@ agent.zip
 __pycache__/
 *.pyc
 .env
+node_modules/
+cdk.out/
+agentcore/.cli/logs/
+*.log

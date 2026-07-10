@@ -1,0 +1,17 @@
+{
+  "targets": {
+    "default": {
+      "resources": {
+        "runtimes": {
+          "openclaw_strands": {
+            "runtimeId": "openclawagent_openclaw_strands-9vnRm7BmVc",
+            "runtimeArn": "arn:aws:bedrock-agentcore:ap-southeast-2:929814269375:runtime/openclawagent_openclaw_strands-9vnRm7BmVc",
+            "roleArn": "arn:aws:iam::929814269375:role/AgentCore-openclawagent-d-ApplicationAgentOpenclawS-b4N04yWgADZX"
+          }
+        },
+        "stackName": "AgentCore-openclawagent-default",
+        "deployHash": "c8b12abb5d29231e"
+      }
+    }
+  }
+}
