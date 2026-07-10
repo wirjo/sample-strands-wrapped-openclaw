@@ -31,7 +31,9 @@ RUN mkdir -p /app/.openclaw/workspace /app/.openclaw/agents
 
 ENV PYTHONUNBUFFERED=1 \
     OPENCLAW_PORT=18789 \
-    HOME=/app
+    HOME=/app \
+    AWS_DEFAULT_REGION=ap-southeast-2 \
+    AWS_REGION=ap-southeast-2
 
 # AgentCore Runtime service contract port
 EXPOSE 8080
