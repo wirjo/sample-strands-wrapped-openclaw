@@ -2,14 +2,21 @@
   "models": {
     "providers": {
       "amazon-bedrock": {
-        "baseUrl": "https://bedrock-runtime.us-east-1.amazonaws.com",
+        "baseUrl": "https://bedrock-runtime.ap-southeast-2.amazonaws.com",
         "api": "bedrock-converse-stream",
         "auth": "aws-sdk",
         "models": [
           {
-            "id": "global.anthropic.claude-sonnet-4-6",
-            "name": "Claude Sonnet 4.6 (Global)",
+            "id": "anthropic.claude-sonnet-4-20250514-v1:0",
+            "name": "Claude Sonnet 4",
             "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "anthropic.claude-3-5-haiku-20241022-v1:0",
+            "name": "Claude 3.5 Haiku",
             "input": ["text", "image"],
             "contextWindow": 200000,
             "maxTokens": 8192
@@ -21,7 +28,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "amazon-bedrock/global.anthropic.claude-sonnet-4-6"
+        "primary": "amazon-bedrock/anthropic.claude-3-5-haiku-20241022-v1:0"
       },
       "sandbox": {
         "mode": "off"
