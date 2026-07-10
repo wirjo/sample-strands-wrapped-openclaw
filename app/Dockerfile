@@ -21,19 +21,20 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY main.py start.sh ./
-RUN chmod +x start.sh
+COPY main.py ./
 
-# Copy OpenClaw config to /app/.openclaw (portable, doesn't depend on HOME)
+# Copy OpenClaw config
 COPY .openclaw/ /app/.openclaw/
 
-# Set environment so OpenClaw finds its config regardless of user
+# Ensure writable workspace for OpenClaw
+RUN mkdir -p /app/.openclaw/workspace /app/.openclaw/agents
+
 ENV PYTHONUNBUFFERED=1 \
     OPENCLAW_PORT=18789 \
-    HOME=/app \
-    OPENCLAW_HOME=/app/.openclaw
+    HOME=/app
 
 # AgentCore Runtime service contract port
 EXPOSE 8080
 
-CMD ["/app/start.sh"]
+# Start Python directly — it boots OpenClaw gateway in a background thread
+CMD ["python", "main.py"]
