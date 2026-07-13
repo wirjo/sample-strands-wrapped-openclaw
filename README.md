@@ -22,12 +22,15 @@ Deploy [OpenClaw](https://openclaw.ai) as a serverless agent on [Amazon Bedrock 
       Client Request                 Amazon Bedrock
 ```
 
-**main.py** (~15 lines) is the only glue code. It:
-1. Receives invocations from AgentCore on `:8080`
-2. Forwards them to the OpenClaw gateway via WebSocket
-3. Returns OpenClaw's response
+**main.py** is the only glue code. It:
+1. Starts the OpenClaw gateway daemon in a **background thread** (via `subprocess.Popen` running `openclaw gateway --port 18789`)
+2. Serves `:8080` immediately for AgentCore health checks
+3. On first invocation, waits for the gateway to pass its `/health` check
+4. Forwards prompts to the gateway via WebSocket and returns the response
 
 **OpenClaw** does all the thinking — tools, memory, web search, code execution, MCP servers, skills.
+
+> **How does the gateway start?** The Python process spawns `openclaw gateway` as a child process on container boot. This is the same daemon you'd run on a laptop (`openclaw gateway run`). It listens on `:18789` for WebSocket connections. The Strands wrapper connects to it locally — no external network exposure needed. For mobile chat (Telegram, WhatsApp, etc.), you'd configure OpenClaw's channel plugins in `openclaw.json` and they connect outbound from the gateway — the gateway doesn't need to be publicly reachable for webhook-free transports like WhatsApp Web or Telegram long-polling.
 
 ## Prerequisites
 
