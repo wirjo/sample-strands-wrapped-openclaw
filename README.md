@@ -359,6 +359,40 @@ clawhub install jina-reader --no-input
 clawhub install deep-research-pro --no-input
 ```
 
+## Validation
+
+This project has been deployed and validated end-to-end on AgentCore Runtime in `ap-southeast-2`.
+
+**Deployment details:**
+- Runtime: `openclawagent_openclaw_strands` (Container build, READY status)
+- Stack: `AgentCore-openclawagent-default` (CloudFormation)
+- Model: `global.anthropic.claude-haiku-4-5-20251001-v1:0` (cross-region inference)
+- Region: `ap-southeast-2`
+
+**Test invocation:**
+```bash
+$ agentcore invoke "Say hello in one sentence"
+→ "Hey. I just came online. Who are you, and who am I?"
+```
+
+**Validated flow:**
+1. ✅ Container image builds successfully via CodeBuild
+2. ✅ Python starts on `:8080` immediately (meets AgentCore health check contract)
+3. ✅ OpenClaw gateway boots in background thread on `:18789`
+4. ✅ WebSocket handshake: challenge → connect (with `platform` field) → authenticated
+5. ✅ Agent request accepted → Bedrock LLM call succeeds → full response returned
+6. ✅ Cross-region inference via `global.` model ID prefix
+7. ✅ Session persistence across invocations (same `sessionKey`)
+
+**Key fixes applied during validation:**
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| Container killed by AgentCore | Python wasn't serving `:8080` fast enough | Boot OpenClaw in background thread, serve HTTP immediately |
+| WebSocket auth failed | Missing `platform` field in connect params | Added `"platform": "agentcore"` to client object |
+| "LLM request failed" | Model ID needs `global.` prefix for cross-region | Changed to `global.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| CDK build fails on fresh clone | `lib/cdk-stack.ts` not in git (CLI generates at create time) | Force-added to repo |
+| Gateway auth error | `gateway.auth.mode: "off"` not a valid value | Changed to `"none"` |
+
 ## Comparison with Other Approaches
 
 | | **This repo** (Strands wrapper) | [aws-samples](https://github.com/aws-samples/sample-host-openclaw-on-amazon-bedrock-agentcore) | [sample-strands-openclaw](https://github.com/wirjo/sample-strands-openclaw) |
